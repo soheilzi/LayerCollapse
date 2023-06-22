@@ -10,3 +10,6 @@
 
 /LayerCollapse/finetuneModel.pth
 
+/LayerCollapse/temp_best_model.pth
+
+/LayerCollapse/best_sparse_model_checkpoint.pth
