@@ -1,7 +1,12 @@
 /LayerCollapse/cifar-10-batches-py/
+
 /LayerCollapse/data/
+
 /LayerCollapse/base_model.pth
+
 /LayerCollapse/vgg.cifar.pretrained.pth
+
 /LayerCollapse/ece226_sp23_lab1.ipynb
+
 /LayerCollapse/finetuneModel.pth
-/LayerCollapse/
+
