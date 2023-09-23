@@ -13,3 +13,6 @@
 /LayerCollapse/temp_best_model.pth
 
 /LayerCollapse/best_sparse_model_checkpoint.pth
+
+regularization_tests/data/*
+regularization_tests/data_cifar100/*
