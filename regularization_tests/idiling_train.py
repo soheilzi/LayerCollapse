@@ -43,9 +43,9 @@ parser.add_argument('--num_classes', default=10, type=int, help='number of class
 parser.add_argument('--use_scheduler', action="store_true", help='use scheduler')
 
 args = parser.parse_args()
-# port noreg 57731
-# port vannila small cifar100 54269
-# port LC 60347
+# port noreg 55471
+# port vannila small cifar100 53417
+# port LC 33981
 # Set random seed
 torch.manual_seed(args.seed)
 np.random.seed(args.seed)

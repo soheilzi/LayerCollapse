@@ -338,7 +338,8 @@ class VGG16(nn.Module):
             nn.MaxPool2d(kernel_size = 2, stride = 2),
             nn.Dropout(0.5))
         self.fc = nn.Sequential(
-            nn.Linear(7*7*512, 4096),
+            # nn.Linear(7*7*512, 4096),
+            nn.Linear(512, 4096),
             nn.BatchNorm1d(4096),
             nn.PReLU(num_parameters=1, init=0.1))
         self.fc1 = nn.Sequential(
@@ -350,7 +351,8 @@ class VGG16(nn.Module):
             nn.Linear(4096, num_classes))
         self.fc_small = nn.Sequential(
             nn.Dropout(0.5),
-            nn.Linear(7*7*512, num_classes))
+            # nn.Linear(7*7*512, num_classes))
+            nn.Linear(512, num_classes))
         
     def forward(self, x):
         out = self.layer1(x)
@@ -367,10 +369,10 @@ class VGG16(nn.Module):
         out = self.layer12(out)
         out = self.layer13(out)
         out = out.reshape(out.size(0), -1)
-        out = self.fc(out)
-        out = self.fc1(out)
-        out = self.fc2(out)
-        # out = self.fc_small(out)
+        # out = self.fc(out)
+        # out = self.fc1(out)
+        # out = self.fc2(out)
+        out = self.fc_small(out)
         return out
     
 
