@@ -197,23 +197,41 @@ def evaluate_model(model, dataloader, count_nonzero_only=False, device=None):
 
 
 def get_dataloader(dataset_name="cifar100", batch_size=512, num_workers=4):
-    image_size = 224
-    transforms = {
-        "train": Compose([
-            Resize(256),
-            RandomCrop(image_size, padding=4),
-            RandomHorizontalFlip(),
-            # RandomRotation(15),
-            ToTensor(),
-            Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-        ]),
-        "val": Compose([
-            Resize(256),
-            CenterCrop(image_size),
-            ToTensor(),
-            Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-        ]),
-    }
+    
+    if dataset_name == "imagenet":
+        image_size = 224
+        transforms = {
+            "train": Compose([
+                Resize(256),
+                RandomCrop(image_size, padding=4),
+                RandomHorizontalFlip(),
+                # RandomRotation(15),
+                ToTensor(),
+                Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+            ]),
+            "val": Compose([
+                Resize(256),
+                CenterCrop(image_size),
+                ToTensor(),
+                Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+            ]),
+        }
+    elif dataset_name == "cifar100":
+        image_size = 32
+        transforms = {
+            "train": Compose([
+                RandomCrop(image_size, padding=4),
+                RandomHorizontalFlip(),
+                RandomRotation(15),
+                ToTensor(),
+                Normalize(mean=[0.5071, 0.4867, 0.4408], std=[0.2675, 0.2565, 0.2761]),
+            ]),
+            "val": Compose([
+                ToTensor(),
+                Normalize(mean=[0.5071, 0.4867, 0.4408], std=[0.2675, 0.2565, 0.2761]),
+            ]),
+        }
+
     dataset = {}
     for split in ["train", "val"]:
        # get cifar100 dataset
