@@ -16,3 +16,4 @@
 
 regularization_tests/data/*
 regularization_tests/data_cifar100/*
+regularization_tests/data_cifar10/*

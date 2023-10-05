@@ -231,6 +231,21 @@ def get_dataloader(dataset_name="cifar100", batch_size=512, num_workers=4):
                 Normalize(mean=[0.5071, 0.4867, 0.4408], std=[0.2675, 0.2565, 0.2761]),
             ]),
         }
+    elif dataset_name == "cifar10":
+        image_size = 32
+        transforms = {
+            "train": Compose([
+                RandomCrop(image_size, padding=4),
+                RandomHorizontalFlip(),
+                RandomRotation(15),
+                ToTensor(),
+                Normalize(mean=[0.4914, 0.4822, 0.4465], std=[0.2470, 0.2435, 0.2616]),
+            ]),
+            "val": Compose([
+                ToTensor(),
+                Normalize(mean=[0.4914, 0.4822, 0.4465], std=[0.2470, 0.2435, 0.2616]),
+            ]),
+        }
 
     dataset = {}
     for split in ["train", "val"]:
@@ -300,41 +315,41 @@ class VGG16(nn.Module):
         self.layer6 = nn.Sequential(
             nn.Conv2d(256, 256, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(256),
-            nn.ReLU())
+            nn.PReLU(num_parameters=1, init=0.1))
         self.layer7 = nn.Sequential(
             nn.Conv2d(256, 256, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(256),
-            nn.ReLU(),
+            nn.PReLU(num_parameters=1, init=0.1),
             nn.MaxPool2d(kernel_size = 2, stride = 2),
             nn.Dropout(0.4))
         
         self.layer8 = nn.Sequential(
             nn.Conv2d(256, 512, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(512),
-            nn.ReLU())
+            nn.PReLU(num_parameters=1, init=0.1))
         self.layer9 = nn.Sequential(
             nn.Conv2d(512, 512, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(512),
-            nn.ReLU())
+            nn.PReLU(num_parameters=1, init=0.1))
         self.layer10 = nn.Sequential(
             nn.Conv2d(512, 512, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(512),
-            nn.ReLU(),
+            nn.PReLU(num_parameters=1, init=0.1),
             nn.MaxPool2d(kernel_size = 2, stride = 2),
             nn.Dropout(0.4))
         
         self.layer11 = nn.Sequential(
             nn.Conv2d(512, 512, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(512),
-            nn.ReLU())
+            nn.PReLU(num_parameters=1, init=0.1))
         self.layer12 = nn.Sequential(
             nn.Conv2d(512, 512, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(512),
-            nn.ReLU())
+            nn.PReLU(num_parameters=1, init=0.1))
         self.layer13 = nn.Sequential(
             nn.Conv2d(512, 512, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(512),
-            nn.ReLU(),
+            nn.PReLU(num_parameters=1, init=0.1),
             nn.MaxPool2d(kernel_size = 2, stride = 2),
             nn.Dropout(0.5))
         self.fc = nn.Sequential(
@@ -349,10 +364,10 @@ class VGG16(nn.Module):
             nn.Dropout(0.5))
         self.fc2= nn.Sequential(
             nn.Linear(4096, num_classes))
-        self.fc_small = nn.Sequential(
-            nn.Dropout(0.5),
-            # nn.Linear(7*7*512, num_classes))
-            nn.Linear(512, num_classes))
+        # self.fc_small = nn.Sequential(
+        #     nn.Dropout(0.5),
+        #     # nn.Linear(7*7*512, num_classes))
+        #     nn.Linear(512, num_classes))
         
     def forward(self, x):
         out = self.layer1(x)
@@ -369,10 +384,10 @@ class VGG16(nn.Module):
         out = self.layer12(out)
         out = self.layer13(out)
         out = out.reshape(out.size(0), -1)
-        # out = self.fc(out)
-        # out = self.fc1(out)
-        # out = self.fc2(out)
-        out = self.fc_small(out)
+        out = self.fc(out)
+        out = self.fc1(out)
+        out = self.fc2(out)
+        # out = self.fc_small(out)
         return out
     
 
