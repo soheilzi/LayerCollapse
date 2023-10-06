@@ -10,6 +10,7 @@ from torch.optim.lr_scheduler import LambdaLR
 
 from torchvision.datasets import *
 from torchvision.transforms import *
+import torchvision.models as models
 
 from torchprofile import profile_macs
 import numpy as np
@@ -163,6 +164,8 @@ def get_model_size(model: nn.Module, data_width=32, count_nonzero_only=False) ->
 def get_model(model_name, num_classes=10):
     if model_name == "VGG16":
         return VGG16(num_classes=num_classes)
+    elif model_name == "ViT":
+        return models.VisionTransformer(image_size=32, patch_size=4, num_layers=6, num_classes=num_classes, hidden_dim=512, num_heads=8, mlp_dim=2048, dropout=0.5)
     return models.__dict__[model_name]()
 
 

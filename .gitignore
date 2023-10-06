@@ -15,5 +15,5 @@
 /LayerCollapse/best_sparse_model_checkpoint.pth
 
 regularization_tests/data/*
-regularization_tests/data_cifar100/*
-regularization_tests/data_cifar10/*
+regularization_tests/data_cifar100/*.pth
+regularization_tests/data_cifar10/*.pth
