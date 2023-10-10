@@ -52,9 +52,9 @@ parser.add_argument('--use_scheduler', action="store_true", help='use scheduler'
 parser.add_argument('--fraction', default=0.5, type=float, help='fraction')
 
 args = parser.parse_args()
-# port mixer lc 59193
-# port vit 47897
-# port vit lc 59129
+# port mixer 40859
+# port vit 60391
+# port vit lc 38551
 torch.manual_seed(args.seed)
 np.random.seed(args.seed)
 random.seed(args.seed)
@@ -129,6 +129,8 @@ for epoch in tqdm(range(args.epochs)):
 
             loss = criterion(outputs, labels) + lc1() * (1 - slope1) ** 2 + lc2() * (1 - slope2) ** 2 + lc3() * (1 - slope3) ** 2 + lc4() * (1 - slope4) ** 2 + lc5() * (1 - slope5) ** 2 + lc6() * (1 - slope6) ** 2 + lc7() * (1 - slope7) ** 2 + lc8() * (1 - slope8) ** 2 + lc9() * (1 - slope9) ** 2 + lc10() * (1 - slope10) ** 2
         if args.reg == "LC" and args.model == "mixer":
+            loss = criterion(outputs, labels) + get_model_linear_loss(model, fraction=fraction()) * lc1()
+        elif args.reg == "LC" and args.model == "timm_vit":
             loss = criterion(outputs, labels) + get_model_linear_loss(model, fraction=fraction()) * lc1()
         else:
             loss = criterion(outputs, labels)
