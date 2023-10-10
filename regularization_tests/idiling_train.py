@@ -49,11 +49,12 @@ parser.add_argument('--reg_strength', default=0.0, type=float, help='regularizat
 parser.add_argument('--load', default="", type=str, help='load model')
 parser.add_argument('--num_classes', default=10, type=int, help='number of classes')
 parser.add_argument('--use_scheduler', action="store_true", help='use scheduler')
+parser.add_argument('--fraction', default=0.5, type=float, help='fraction')
 
 args = parser.parse_args()
-# port noreg vit 6 layer 35641
-# port noreg vit 12 layer 36451
-# port dropout 0.5 6 layer 40099
+# port mixer lc 59193
+# port vit 47897
+# port vit lc 59129
 torch.manual_seed(args.seed)
 np.random.seed(args.seed)
 random.seed(args.seed)
@@ -85,6 +86,7 @@ lc7 = lt.liveVar(args.lc7, "lc7")
 lc8 = lt.liveVar(args.lc8, "lc8")
 lc9 = lt.liveVar(args.lc9, "lc9")
 lc10 = lt.liveVar(args.lc10, "lc10")
+fraction = lt.liveVar(args.fraction, "fraction")
 
 old_lts = {"lr": lr(), "wd": wd(), "lc1": lc1(), "lc2": lc2()}
 # Set loss function
@@ -110,7 +112,7 @@ for epoch in tqdm(range(args.epochs)):
         outputs = model(inputs)
 
         # Regularized loss
-        if args.reg == "LC":
+        if args.reg == "LC" and args.model == "VGG16":
             slope1 = model._modules["fc1"][2].weight
             slope2 = model._modules["fc"][2].weight
             slope3 = model._modules["layer13"][2].weight
@@ -126,6 +128,8 @@ for epoch in tqdm(range(args.epochs)):
             print(f"slope1: {slope1.item():.3f}, slope2: {slope2.item():.3f}, slope3: {slope3.item():.3f}, slope4: {slope4.item():.3f}, slope5: {slope5.item():.3f}, slope6: {slope6.item():.3f}, slope7: {slope7.item():.3f}, slope8: {slope8.item():.3f}, slope9: {slope9.item():.3f}, slope10: {slope10.item():.3f}")
 
             loss = criterion(outputs, labels) + lc1() * (1 - slope1) ** 2 + lc2() * (1 - slope2) ** 2 + lc3() * (1 - slope3) ** 2 + lc4() * (1 - slope4) ** 2 + lc5() * (1 - slope5) ** 2 + lc6() * (1 - slope6) ** 2 + lc7() * (1 - slope7) ** 2 + lc8() * (1 - slope8) ** 2 + lc9() * (1 - slope9) ** 2 + lc10() * (1 - slope10) ** 2
+        if args.reg == "LC" and args.model == "mixer":
+            loss = criterion(outputs, labels) + get_model_linear_loss(model, fraction=fraction()) * lc1()
         else:
             loss = criterion(outputs, labels)
         loss.backward()

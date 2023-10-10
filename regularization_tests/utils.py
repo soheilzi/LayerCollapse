@@ -11,6 +11,7 @@ from torch.optim.lr_scheduler import LambdaLR
 from torchvision.datasets import *
 from torchvision.transforms import *
 import torchvision.models as models
+import timm
 
 from torchprofile import profile_macs
 import numpy as np
@@ -21,6 +22,8 @@ import torch.distributed as dist
 from torch.nn.parallel import DistributedDataParallel as DDP
 import os
 import torch.multiprocessing as mp
+
+from collapsible_MLP import CollapsibleMlp
 
 import LiveTune as lt
 
@@ -160,13 +163,24 @@ def get_model_size(model: nn.Module, data_width=32, count_nonzero_only=False) ->
     """
     return get_num_parameters(model, count_nonzero_only) * data_width
 
-
-def get_model(model_name, num_classes=10):
+def get_model(model_name, num_classes=10, drop_rate=0.1, image_size=32, patch_size=4, num_layers=6, hidden_dim=512, num_heads=8, mlp_dim=2048, dropout=0.1):
     if model_name == "VGG16":
         return VGG16(num_classes=num_classes)
     elif model_name == "ViT":
-        return models.VisionTransformer(image_size=32, patch_size=4, num_layers=6, num_classes=num_classes, hidden_dim=512, num_heads=8, mlp_dim=2048, dropout=0.5)
+        return models.VisionTransformer(image_size=32, patch_size=4, num_layers=6, num_classes=num_classes, hidden_dim=512, num_heads=8, mlp_dim=2048, dropout=0.1)
+    elif model_name == "mixer":
+        return timm.models.mlp_mixer.MlpMixer(num_classes=num_classes, patch_size=4, img_size=32, drop_rate=0.1, mlp_layer=CollapsibleMlp)
+    elif model_name == "timm_vit":
+        return timm.models.vision_transformer.VisionTransformer(num_classes=num_classes, patch_size=4, img_size=32, drop_rate=0.1, mlp_layer=CollapsibleMlp, depth=6)
     return models.__dict__[model_name]()
+
+def get_model_linear_loss(model, fraction=1.0):
+    linear_loss = 0
+    num_mlp_layers = len(list(model.named_modules()))
+    for name, module in list(model.named_modules())[::-1][:int(num_mlp_layers * fraction)]:
+        if isinstance(module, CollapsibleMlp):
+            linear_loss += module.linear_loss()
+    return linear_loss
 
 
 Byte = 8
