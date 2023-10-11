@@ -52,9 +52,10 @@ parser.add_argument('--use_scheduler', action="store_true", help='use scheduler'
 parser.add_argument('--fraction', default=0.5, type=float, help='fraction')
 
 args = parser.parse_args()
-# port mixer 40859
-# port vit 60391
-# port vit lc 38551
+# port mixer lc2frac8 49527
+# port mixer lc2frac5 43469 
+# port mixer smallset vanilla 53185
+# port mixer smallset lc2frac8 55025
 torch.manual_seed(args.seed)
 np.random.seed(args.seed)
 random.seed(args.seed)

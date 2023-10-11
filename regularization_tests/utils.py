@@ -290,8 +290,8 @@ def get_dataloader(dataset_name="cifar100", batch_size=512, num_workers=4):
     dataloader = {}
     for split in ['train', 'val']:
         dataloader[split] = DataLoader(
-            # torch.utils.data.Subset(dataset[split], list(range(0, len(dataset[split]), 10 if split == 'train' else 10))),
-            dataset[split],
+            torch.utils.data.Subset(dataset[split], list(range(0, len(dataset[split]), 10 if split == 'train' else 10))),
+            # dataset[split],
             batch_size=batch_size,
             shuffle=(split == 'train'),
             num_workers=num_workers,
