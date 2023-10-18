@@ -167,11 +167,11 @@ def get_model(model_name, num_classes=10, drop_rate=0.1, image_size=32, patch_si
     if model_name == "VGG16":
         return VGG16(num_classes=num_classes)
     elif model_name == "ViT":
-        return models.VisionTransformer(image_size=32, patch_size=4, num_layers=6, num_classes=num_classes, hidden_dim=512, num_heads=8, mlp_dim=2048, dropout=0.1)
+        return models.VisionTransformer(image_size=image_size, patch_size=4, num_layers=6, num_classes=num_classes, hidden_dim=512, num_heads=8, mlp_dim=2048, dropout=0.1)
     elif model_name == "mixer":
-        return timm.models.mlp_mixer.MlpMixer(num_classes=num_classes, patch_size=4, img_size=32, drop_rate=0.1, mlp_layer=CollapsibleMlp)
+        return timm.models.mlp_mixer.MlpMixer(num_classes=num_classes, patch_size=patch_size, img_size=image_size, drop_rate=0.1, mlp_layer=CollapsibleMlp)
     elif model_name == "timm_vit":
-        return timm.models.vision_transformer.VisionTransformer(num_classes=num_classes, patch_size=4, img_size=32, drop_rate=0.1, mlp_layer=CollapsibleMlp, depth=6)
+        return timm.models.vision_transformer.VisionTransformer(num_classes=num_classes, patch_size=patch_size, img_size=image_size, drop_rate=0.1, mlp_layer=CollapsibleMlp, depth=num_layers)
     return models.__dict__[model_name]()
 
 def get_model_linear_loss(model, fraction=1.0):
@@ -283,7 +283,7 @@ def get_dataloader(dataset_name="cifar100", batch_size=512, num_workers=4):
             )
         elif dataset_name == "imagenet":
             dataset[split] = ImageNet(
-                root="/data/soheil/datasets/imagenet",
+                root="/home/shariff/imagenet",
                 split=split,
                 transform=transforms[split],
             )

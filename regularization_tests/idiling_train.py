@@ -27,9 +27,9 @@ parser = argparse.ArgumentParser(description='PyTorch CIFAR10 Training')
 parser.add_argument('--lr', default=0.005, type=float, help='learning rate')
 parser.add_argument("--wd", default=0.0, type=float, help="weight decay")
 parser.add_argument('--lc1', default=0.2, type=float, help='lc1')
-parser.add_argument('--lc2', default=0.1, type=float, help='lc2')
-parser.add_argument('--lc3', default=0.01, type=float, help='lc3')
-parser.add_argument('--lc4', default=0.01, type=float, help='lc4')
+parser.add_argument('--lc2', default=0.2, type=float, help='lc2')
+parser.add_argument('--lc3', default=0.1, type=float, help='lc3')
+parser.add_argument('--lc4', default=0.1, type=float, help='lc4')
 parser.add_argument('--lc5', default=0.01, type=float, help='lc5')
 parser.add_argument('--lc6', default=0.01, type=float, help='lc6')
 parser.add_argument('--lc7', default=0.01, type=float, help='lc7')
@@ -50,12 +50,14 @@ parser.add_argument('--load', default="", type=str, help='load model')
 parser.add_argument('--num_classes', default=10, type=int, help='number of classes')
 parser.add_argument('--use_scheduler', action="store_true", help='use scheduler')
 parser.add_argument('--fraction', default=0.5, type=float, help='fraction')
+parser.add_argument('--patch_size', default=4, type=int, help='patch size')
+parser.add_argument('--image_size', default=32, type=int, help='image size')
+
 
 args = parser.parse_args()
-# port mixer lc2frac8 49527
-# port mixer lc2frac5 43469 
-# port mixer smallset vanilla 53185
-# port mixer smallset lc2frac8 55025
+# port vit vanilla imagenet 36237
+
+
 torch.manual_seed(args.seed)
 np.random.seed(args.seed)
 random.seed(args.seed)
@@ -67,7 +69,7 @@ device = torch.device("cuda:{}".format(args.device) if torch.cuda.is_available()
 dataloader = get_dataloader(args.dataset, args.batch_size)
 
 # Set model
-model = get_model(args.model, args.num_classes).to(device)
+model = get_model(args.model, args.num_classes, patch_size=args.patch_size, image_size=args.image_size).to(device)
 if args.load != "":
     model.load_state_dict(torch.load(args.load))
 
@@ -126,10 +128,13 @@ for epoch in tqdm(range(args.epochs)):
             slope10 = model._modules["layer6"][2].weight
 
             # print with 3 decimal places
+            loss = criterion(outputs, labels) + lc1() * (1. - slope1) ** 2 + lc2() * (1 - slope2) ** 2 + lc3() * (1 - slope3) ** 2 + lc4() * (1 - slope4) ** 2 + lc5() * (1 - slope5) ** 2 + lc6() * (1 - slope6) ** 2 + lc7() * (1 - slope7) ** 2 + lc8() * (1 - slope8) ** 2 + lc9() * (1 - slope9) ** 2 + lc10() * (1 - slope10) ** 2
             print(f"slope1: {slope1.item():.3f}, slope2: {slope2.item():.3f}, slope3: {slope3.item():.3f}, slope4: {slope4.item():.3f}, slope5: {slope5.item():.3f}, slope6: {slope6.item():.3f}, slope7: {slope7.item():.3f}, slope8: {slope8.item():.3f}, slope9: {slope9.item():.3f}, slope10: {slope10.item():.3f}")
+            # print((lc1() * (1. - slope1) ** 2 + lc2() * (1 - slope2) ** 2 + lc3() * (1 - slope3) ** 2 + lc4() * (1 - slope4) ** 2 + lc5() * (1 - slope5) ** 2 + lc6() * (1 - slope6) ** 2 + lc7() * (1 - slope7) ** 2 + lc8() * (1 - slope8) ** 2 + lc9() * (1 - slope9) ** 2 + lc10() * (1 - slope10) ** 2).item())
+            # print(lc1(), lc2(), lc3(), lc4(), lc5(), lc6(), lc7(), lc8(), lc9(), lc10())
+            # print(slope1.requires_grad)
 
-            loss = criterion(outputs, labels) + lc1() * (1 - slope1) ** 2 + lc2() * (1 - slope2) ** 2 + lc3() * (1 - slope3) ** 2 + lc4() * (1 - slope4) ** 2 + lc5() * (1 - slope5) ** 2 + lc6() * (1 - slope6) ** 2 + lc7() * (1 - slope7) ** 2 + lc8() * (1 - slope8) ** 2 + lc9() * (1 - slope9) ** 2 + lc10() * (1 - slope10) ** 2
-        if args.reg == "LC" and args.model == "mixer":
+        elif args.reg == "LC" and args.model == "mixer":
             loss = criterion(outputs, labels) + get_model_linear_loss(model, fraction=fraction()) * lc1()
         elif args.reg == "LC" and args.model == "timm_vit":
             loss = criterion(outputs, labels) + get_model_linear_loss(model, fraction=fraction()) * lc1()
