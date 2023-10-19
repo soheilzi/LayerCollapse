@@ -213,7 +213,7 @@ def evaluate_model(model, dataloader, count_nonzero_only=False, device=None):
     model.train()
 
 
-def get_dataloader(dataset_name="cifar100", batch_size=512, num_workers=4):
+def get_dataloader(dataset_name="cifar100", batch_size=512, num_workers=20):
     
     if dataset_name == "imagenet":
         image_size = 224
