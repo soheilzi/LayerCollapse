@@ -44,6 +44,25 @@ def eval(
             running_loss += loss.item()
     return running_loss/len(dataloader)
 
+def eval_top5(
+        model: nn.Module,
+        dataloader: DataLoader,
+        criterion: nn.Module,
+        device: torch.device,
+):
+    model.eval()
+    running_loss = 0.0
+    top5_acc = 0.0
+    with torch.no_grad():
+        for i, (inputs, labels) in enumerate(dataloader):
+            inputs, labels = inputs.to(device), labels.to(device)
+            outputs = model(inputs)
+            loss = criterion(outputs, labels)
+            _, predicted = outputs.topk(5, 1, True, True)
+            top5_acc += (predicted == labels.view(-1, 1)).sum().item()
+            running_loss += loss.item()
+    return top5_acc/len(dataloader.dataset)
+
 def train(
         model: nn.Module,
         dataloader: DataLoader,

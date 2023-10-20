@@ -102,6 +102,8 @@ train_losses = []
 train_accs = []
 val_losses = []
 val_accs = []
+train_top5_accs = []
+val_top5_accs = []
 
 # Train
 for epoch in tqdm(range(args.epochs)):
@@ -109,6 +111,7 @@ for epoch in tqdm(range(args.epochs)):
     model.train()
     train_loss = 0.0
     train_acc = 0.0
+    train_top5_acc = 0.0
     for i, (inputs, labels) in enumerate(dataloader["train"]):
         inputs, labels = inputs.to(device), labels.to(device)
         opt.zero_grad()
@@ -145,18 +148,23 @@ for epoch in tqdm(range(args.epochs)):
 
         train_loss += loss.item()
         train_acc += (outputs.argmax(1) == labels).sum().item()
+        top5 = torch.topk(outputs, 5, dim=1)[1]
+        train_top5_acc += (top5 == labels.unsqueeze(1)).sum().item()
 
     train_loss /= len(dataloader["train"])
     train_acc /= len(dataloader["train"].dataset)
+    train_top5_acc /= len(dataloader["train"].dataset)
     train_losses.append(train_loss)
     train_accs.append(train_acc)
+    train_top5_accs.append(train_top5_acc)
 
     # Validation
     val_losses.append(eval(model, dataloader["val"], criterion, device))
+    val_top5_accs.append(eval_top5(model, dataloader["val"], criterion, device))
     val_accs.append(evaluate(model, dataloader["val"], device=device))
 
     # Save
-    if save_trigger():
+    if save_trigger() or epoch%10 == 1:
         torch.save(model.state_dict(), args.save_dir + args.save_name + ".pth")
         with open(args.save_dir + args.save_name + ".pkl", "wb") as f:
             pickle.dump({
@@ -164,11 +172,13 @@ for epoch in tqdm(range(args.epochs)):
                 "train_accs": train_accs,
                 "val_losses": val_losses,
                 "val_accs": val_accs,
+                "train_top5": train_top5_accs,
+                "val_top5": val_top5_accs,
             }, f)
 
 
     # Print
-    print("Epoch: {}, Train Loss: {:.4f}, Train Acc: {:.4f}, Val Loss: {:.4f}, Val Acc: {:.4f}".format(epoch, train_losses[-1], train_accs[-1], val_losses[-1], val_accs[-1]))
+    print("Epoch: {}, Train Loss: {:.4f}, Train Acc: {:.4f}, Train top5: {:.4f}, Val Loss: {:.4f}, Val Acc: {:.4f}, Val top5: {:.4f}".format(epoch, train_losses[-1], train_accs[-1], train_top5_accs[-1], val_losses[-1], val_accs[-1], val_top5_accs[-1]))
 
     # Scheduler
     if args.use_scheduler and epoch + 1 % 20 == 0:
@@ -187,5 +197,7 @@ with open(args.save_dir + args.save_name + ".pkl", "wb") as f:
         "train_losses": train_losses,
         "train_accs": train_accs,
         "val_losses": val_losses,
-        "val_accs": val_accs
+        "val_accs": val_accs,
+        "train_top5": train_top5_accs,
+        "val_top5": val_top5_accs,
     }, f)
